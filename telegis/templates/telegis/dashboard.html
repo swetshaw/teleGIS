@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+  <!-- Make sure you put this AFTER Leaflet's CSS -->
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .topnav {
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    .topnav a {
+      float: left;
+      color: #f2f2f2;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+    }
+
+    .topnav a:hover {
+      background-color: #ddd;
+      color: black;
+    }
+
+    .topnav a.active {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .side-panel {
+      height: 100%;
+      width: 350px;
+      position: fixed;
+      overflow-x: hidden;
+      /* Disable horizontal scroll */
+      padding-top: 20px;
+      background-color: yellowgreen;
+    }
+
+    /* Style page content */
+    .main {
+      margin-left: 350px;
+      /* Same as the width of the sidebar */
+      padding: 0px 5px;
+    }
+
+    .select-css {
+      width: 250px;
+
+      font-family: sans-serif;
+      font-weight: 700;
+      color: #444;
+      line-height: 1.3;
+      box-sizing: border-box;
+      border: 1px solid #aaa;
+      box-shadow: 0 1px 0 1px rgba(0, 0, 0, .04);
+      border-radius: .5em;
+    }
+
+    .select-css::-ms-expand {
+      display: none;
+    }
+
+    .select-css:hover {
+      border-color: #888;
+    }
+
+    .select-css:focus {
+      border-color: #aaa;
+      box-shadow: 0 0 1px 3px rgba(59, 153, 252, .7);
+      box-shadow: 0 0 0 3px -moz-mac-focusring;
+      color: #222;
+      outline: none;
+    }
+
+    .select-css option {
+      font-weight: normal;
+    }
+
+
+    .side-table {
+      border: 1px whitesmoke;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light " style="background-color: #adada6;">
+    <a class="navbar-brand" href="#" style="font-size: 30px; color: #0a157d;">TeleGIS</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">Dashboard <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Features</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <div class="side-panel">
+    <table class="side-table">
+      <tr>
+        <td><label for="demo-ammenities">Group</label></td>
+      </tr>
+      <tr>
+        <td><select class="select-css" name="demo-ammenities" id="demo-ammenities" onchange="selectCategory(this)">
+            <option selected=True disabled>---</option>
+            <option value="Demography">Demography</option>
+            <option value="Household Ammenities">Household Ammenities</option>
+            <option value="Village Ammenities">Village Ammenities</option>
+            <option value="Town Ammenities">Town Ammenities</option>
+          </select></td>
+      </tr>
+      <tr>
+        <td><label for="ammenities">Category</label></td>
+      </tr>
+      <tr>
+        <td><select class="select-css" name="ammenities" id="am" onchange="selectIndicator(this)"></select></td>
+      </tr>
+      <tr>
+        <td><label for="indicator">Indicator</label></td>
+      </tr>
+      <tr>
+        <td><select class="select-css" name="indicator" id="indi"></select></td>
+      </tr>
+    </table>
+  </div>
+  <div class="main">
+
+    <div id="mapid" style="width: auto; height: 600px;">Map goes here</div>
+
+  </div>
+  <script>
+    var mymap = L.map('mapid').setView([23.603003, 87.118835], 5);
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoic3dldGFzaGF3IiwiYSI6ImNrYW1zNmlxZDBuNDkyeXFtN2hoN2dldTAifQ.FrHeqXDvApUcR9GHUFb6BQ', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      maxZoom: 18,
+      id: 'mapbox/streets-v11',
+      tileSize: 512,
+      zoomOffset: -1,
+      accessToken: 'pk.eyJ1Ijoic3dldGFzaGF3IiwiYSI6ImNrYW1zNmlxZDBuNDkyeXFtN2hoN2dldTAifQ.FrHeqXDvApUcR9GHUFb6BQ'
+    }).addTo(mymap);
+
+    var marker = L.marker([51.5, -0.09]).addTo(mymap);
+    var circle = L.circle([51.508, -0.11], {
+      color: 'red',
+      fillColor: '#f03',
+      fillOpacity: 0.5,
+      radius: 500
+    }).addTo(mymap);
+
+    /*marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup();
+    circle.bindPopup("I am a circle.");
+    polygon.bindPopup("I am a polygon.");*/
+
+    /*var popup = L.popup()
+        .setLatLng([51.5, -0.09])
+        .setContent("I am a standalone popup.")
+        .openOn(mymap);*/
+
+    var popup = L.popup();
+
+    function onMapClick(e) {
+      popup
+        .setLatLng(e.latlng)
+        .setContent("You clicked the map at " + e.latlng.toString())
+        .openOn(mymap);
+    }
+
+
+    mymap.on('click', onMapClick);
+  </script>
+
+  <script type="text/javascript">
+
+    function selectCategory(obj) {
+      var choice = obj.value;
+      console.log(choice);
+      choiceGenerator(ammenity[choice].choices);
+    }
+
+    function choiceGenerator(choices) {
+      var distDOM = document.getElementById("am");
+      document.getElementById("am").innerHTML = "";
+      distOption = document.createElement("option");
+      distOption.appendChild(document.createTextNode("---"));
+      distDOM.appendChild(distOption);
+      for (let i = 0; i < choices.length; i++) {
+        dist = choices[i];
+        distOption = document.createElement("option");
+        distOption.appendChild(document.createTextNode(dist));
+        distOption.value = dist;
+        distDOM.appendChild(distOption);
+      }
+    }
+
+    function selectIndicator(obj) {
+      var indicator = obj.value;
+      console.log(indicator);
+      indicatorGenerator(indicators[indicator].ind);
+    }
+
+    function indicatorGenerator(indics) {
+      var distDOM = document.getElementById("indi");
+      document.getElementById("indi").innerHTML = "";
+      for (let i = 0; i < indics.length; i++) {
+        dist = indics[i];
+        distOption = document.createElement("option");
+        distOption.appendChild(document.createTextNode(dist));
+        distOption.value = dist;
+        distDOM.appendChild(distOption);
+      }
+    }
+
+
+
+    var ammenity = {
+      'Demography': {
+        choices: ["a", "b"]
+      },
+      'Household Ammenities': {
+        choices: ["Condition of Census House", "Material of Roof", "Material of Wall", "Material of Floor", "Number of Dwelling Rooms", "Household size",
+          "Married couple", "Main Source of Drinking Water", "Location of drinking water source", "Main Source of lighting",
+          "Number of households having latrine facility within the premises", ""]
+      }
+    };
+
+    var indicators = {
+      'Condition of Census House': {
+        ind: ["as", "fd"]
+      },
+      'Material of Roof': {
+        ind: ["gh", "hkh"]
+      }
+    };
+  </script>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
